@@ -7,6 +7,8 @@ from django.views import View
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
+from perfil.models import Perfil
+
 from . import models
 
 # Create your views here.
@@ -28,11 +30,6 @@ class DetalheProduto(DetailView):
 
 class AdicionarAoCarrinho(View):
     def get(self, *args, **kwargs):
-
-        # TODO: Remover linhas abaixo
-        # if self.request.session.get('carrinho'):
-        #   del self.request.session['carrinho']
-        #    self.request.session.save()
 
         http_referer = self.request.META.get(
             'HTTP_REFERER',
@@ -164,4 +161,28 @@ class Carrinho(View):
 
 class ResumoDaCompra(View):
     def get(self, *args, **kwargs):
-        return HttpResponse('Finalizar')
+
+        if not self.request.user.is_authenticated:
+            return redirect('perfil:criar')
+
+        perfil = Perfil.objects.filter(usuario=self.request.user).exists()
+
+        if not perfil:
+            messages.error(
+                self.request,
+                'Usuário sem perfil.'
+            )
+            return redirect('perfil:criar')
+
+        if not self.request.get['carrinho']:
+            messages.error(
+                self.request,
+                'Carrinho vazio.'
+            )
+            return redirect('produto:lista')
+
+        contexto = {
+            'usuario': self.request.user,
+            'carrinho': self.request.session['carrinho'],
+        }
+        return render(self.request, 'produto/resumodacompra.html', contexto)
