@@ -4,13 +4,11 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.views.generic.list import ListView
+from django.views.generic import ListView
 
 from . import forms, models
-
-# Create your views here.
 
 
 class BasePerfil(View):
@@ -25,7 +23,8 @@ class BasePerfil(View):
 
         if self.request.user.is_authenticated:
             self.perfil = models.Perfil.objects.filter(
-                usuario=self.request.user).first()
+                usuario=self.request.user
+            ).first()
 
             self.contexto = {
                 'userform': forms.UserForm(
@@ -35,14 +34,13 @@ class BasePerfil(View):
                 ),
                 'perfilform': forms.PerfilForm(
                     data=self.request.POST or None,
-                    instance=self.perfil,
+                    instance=self.perfil
                 )
-
             }
         else:
             self.contexto = {
                 'userform': forms.UserForm(
-                    data=self.request.POST or None,
+                    data=self.request.POST or None
                 ),
                 'perfilform': forms.PerfilForm(
                     data=self.request.POST or None
@@ -66,9 +64,11 @@ class Criar(BasePerfil):
     def post(self, *args, **kwargs):
         if not self.userform.is_valid() or not self.perfilform.is_valid():
             messages.error(
+                self.request,
                 'Existem erros no formulário de cadastro. Verifique se todos '
                 'os campos foram preenchidos corretamente.'
             )
+
             return self.renderizar
 
         username = self.userform.cleaned_data.get('username')
@@ -81,6 +81,7 @@ class Criar(BasePerfil):
         if self.request.user.is_authenticated:
             usuario = get_object_or_404(
                 User, username=self.request.user.username)
+
             usuario.username = username
 
             if password:
@@ -93,14 +94,15 @@ class Criar(BasePerfil):
 
             if not self.perfil:
                 self.perfilform.cleaned_data['usuario'] = usuario
+                print(self.perfilform.cleaned_data)
                 perfil = models.Perfil(**self.perfilform.cleaned_data)
                 perfil.save()
             else:
-                self.perfilform.save(commit=False)
+                perfil = self.perfilform.save(commit=False)
                 perfil.usuario = usuario
                 perfil.save()
 
-        # Usuário não logado
+        # Usário não logado (novo)
         else:
             usuario = self.userform.save(commit=False)
             usuario.set_password(password)
@@ -133,7 +135,7 @@ class Criar(BasePerfil):
             'Você fez login e pode concluir sua compra.'
         )
 
-        return redirect('perfil:carrinho')
+        return redirect('produto:carrinho')
         return self.renderizar
 
 
@@ -152,7 +154,7 @@ class Login(View):
                 self.request,
                 'Usuário ou senha inválidos.'
             )
-            return redirect('prefil:criar')
+            return redirect('perfil:criar')
 
         usuario = authenticate(
             self.request, username=username, password=password)
@@ -162,7 +164,7 @@ class Login(View):
                 self.request,
                 'Usuário ou senha inválidos.'
             )
-            return redirect('prefil:criar')
+            return redirect('perfil:criar')
 
         login(self.request, user=usuario)
 
@@ -170,14 +172,16 @@ class Login(View):
             self.request,
             'Você fez login no sistema e pode concluir sua compra.'
         )
-
         return redirect('produto:carrinho')
 
 
 class Logout(View):
     def get(self, *args, **kwargs):
         carrinho = copy.deepcopy(self.request.session.get('carrinho'))
+
         logout(self.request)
+
         self.request.session['carrinho'] = carrinho
         self.request.session.save()
+
         return redirect('produto:lista')

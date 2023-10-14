@@ -174,7 +174,7 @@ class ResumoDaCompra(View):
             )
             return redirect('perfil:criar')
 
-        if not self.request.get['carrinho']:
+        if not self.request.session.get('carrinho'):
             messages.error(
                 self.request,
                 'Carrinho vazio.'

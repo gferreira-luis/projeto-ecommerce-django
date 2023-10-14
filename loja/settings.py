@@ -46,8 +46,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     "crispy_bootstrap4",
 
-    # TODO: Remover debug toolbar
-    "debug_toolbar",
+
 ]
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 
@@ -166,12 +165,6 @@ SESSION_SAVE_EVERY_REQUEST = False
 # SESSION_ENGINE = "django.contrib.sessions.backends.file"
 # SESSION_FILE_PATH = '/home/luizotavio/Desktop/temp'
 
-# TODO: Remover debug toolbar
-INTERNAL_IPS = [
-    # ...
-    "127.0.0.1",
-    # ...
-]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
