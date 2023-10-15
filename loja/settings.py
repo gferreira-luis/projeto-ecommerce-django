@@ -63,8 +63,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 
-    # TODO: Remover debug toolbar
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+
+
 ]
 
 ROOT_URLCONF = 'loja.urls'
